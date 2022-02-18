@@ -6,17 +6,6 @@ struct sensorRelayPair {
 };
 
 sensorRelayPair controls[] = {
-  { 30, 31, LOW, 0},
-  { 32, 33, LOW, 0},
-  { 34, 35, LOW, 0},
-  { 36, 37, LOW, 0},
-  { 38, 39, LOW, 0},
-  { 40, 41, LOW, 0},
-  { 42, 43, LOW, 0},
-  { 44, 45, LOW, 0},
-  { 46, 47, LOW, 0},
-  { 48, 49, LOW, 0},
-  { 50, 51, LOW, 0},
   { 52, 53, HIGH, 0}
 };
 
@@ -27,7 +16,8 @@ void setup() {
     Serial.print("Setting pin mode of ");
     Serial.print(controls[i].sensorPin);
     Serial.print(" as a sensor and ");
-    Serial.println(controls[i].relayPin);
+    Serial.print(controls[i].relayPin);
+    Serial.println(" as relay");
     pinMode(controls[i].sensorPin, INPUT);
     pinMode(controls[i].relayPin, OUTPUT);
     digitalWrite(controls[i].relayPin, HIGH);
@@ -56,9 +46,10 @@ void loop() {
         Serial.print("Time was ");
         Serial.print(t);
         Serial.print(" and updated was ");
-        Serial.println(controls[i].updated);
+        Serial.print(controls[i].updated);
+        Serial.println(", so not firing");
       }
     }
   }
-  delay(10);
+delay(10);
 }
