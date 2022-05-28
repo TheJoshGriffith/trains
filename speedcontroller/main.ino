@@ -1,39 +1,54 @@
 #include <Encoder.h>
 
-// PINS
-int controllerToggle1 = 2;
-int controllerToggle2 = 3;
-int pwm = 9;
-int encoderRight = 18;
-int encoderLeft = 19;
+struct speedController {
+  int controllerToggle1;
+  int controllerToggle2;
+  int pwm;
+  int encoderRight;
+  int encoderLeft;
+  long state;
+  Encoder enc;
+};
 
-Encoder myEnc(encoderRight, encoderLeft);
+speedController speedControllers[] = {
+  {2, 3, 9, 18, 19, -999, Encoder(18, 19)},
+  {4, 5, 10, 16, 17, -999, Encoder(16, 17)},
+  {6, 7, 11, 14, 15, -999, Encoder(14, 15)}
+};
 
 void setup() {
+  // Communications
   Serial.begin(9600);
-  pinMode(controllerToggle1, OUTPUT);
-  pinMode(controllerToggle2, OUTPUT);
-  pinMode(pwm, OUTPUT);
-  digitalWrite(controllerToggle1, LOW);
-  digitalWrite(controllerToggle2, HIGH);
-  analogWrite(pwm, 255);
+  
+  // Controllers
+  for (int i = 0; i < (sizeof(speedControllers) / sizeof(speedControllers[0])); i++) {
+    pinMode(speedControllers[i].pwm, OUTPUT);
+    pinMode(speedControllers[i].controllerToggle1, OUTPUT);
+    pinMode(speedControllers[i].controllerToggle2, OUTPUT);
+    
+    digitalWrite(speedControllers[i].controllerToggle1, LOW);
+    digitalWrite(speedControllers[i].controllerToggle2, HIGH);
+    analogWrite(speedControllers[i].pwm, 255);
+  }
 }
 
 long oldPosition  = -999;
 
 void loop() {
-  long newPosition = myEnc.read();
-  if (newPosition != oldPosition) {
-    analogWrite(pwm, abs(newPosition));
-    if (newPosition < 0 && oldPosition >= 0) {
-      digitalWrite(controllerToggle2, LOW);
-      digitalWrite(controllerToggle1, HIGH);
+  for (int i = 0; i < (sizeof(speedControllers) / sizeof(speedControllers[0])); i++) {
+    long newPosition = speedControllers[i].enc.read();
+    if (newPosition != speedControllers[0].state) {
+      analogWrite(speedControllers[0].pwm, abs(newPosition));
+      if (newPosition < 0 && speedControllers[0].state >= 0) {
+        digitalWrite(speedControllers[0].controllerToggle2, LOW);
+        digitalWrite(speedControllers[0].controllerToggle1, HIGH);
+      }
+      if (newPosition > 0 && speedControllers[0].state <= 0) {
+        digitalWrite(speedControllers[0].controllerToggle2, HIGH);
+        digitalWrite(speedControllers[0].controllerToggle1, LOW);
+      }
+      speedControllers[0].state = newPosition;
+      Serial.println(newPosition);
     }
-    if (newPosition > 0 && oldPosition <= 0) {
-      digitalWrite(controllerToggle2, HIGH);
-      digitalWrite(controllerToggle1, LOW);
-    }
-    oldPosition = newPosition;
-    Serial.println(newPosition);
   }
 }
